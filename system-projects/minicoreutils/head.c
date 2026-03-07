@@ -5,6 +5,7 @@
 #define NCOUNT 10
 #define MAXLINE 1000
 
+/* head: вывод n первых строк файла */
 int main(int argc, char **argv) {
     FILE *file;
     int n = NCOUNT;
