@@ -1,4 +1,4 @@
-// Этот код содержит решение задания №40 главы 6 книги "Современные операционные системы" Эндрю Таненбаума
+// Этот код содержит решение задания №40-41 главы 6 книги "Современные операционные системы" Эндрю Таненбаума
 // В нем используется системно-зависимая библиоткеа pthread, а также unistd, переносимость на windows не гарантируется
 
 #include <stdio.h>
@@ -12,45 +12,70 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t west_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t east_cond = PTHREAD_COND_INITIALIZER;
 
-int west_count = 0; //Счетчик бабуинов на запад
-int east_count = 0; //Счетчик бабуинов на восток
+int active_west = 0;
+int active_east = 0;
+int waiting_west = 0;
+int waiting_east = 0;
+int turn = 0; // 0 - запад, 1 - восток (направление - приоритет)
 
 void cross_west(int id)
 {
     pthread_mutex_lock(&mutex);
-    while (east_count > 0)
+    waiting_west++;
+    // Ждем пока нет активных восточных и либо приоритет у западных, либо нет ожидающих восточных
+    while (active_west > 0 || (turn == 1 && waiting_east > 0))
         pthread_cond_wait(&west_cond, &mutex);
-    west_count++;
+
+    waiting_west--;
+    active_west++;
     pthread_mutex_unlock(&mutex);
 
-    //Пересечение каньона (имитация)
-    printf("West baboon %d is crossind\n", id);
-    usleep(rand() % 100000);
-    
+    printf("West baboon %d is crossing\n", id);
+    usleep(rand() % 100000); // Имитация перехода
+
     pthread_mutex_lock(&mutex);
-    west_count--;
-    if (west_count == 0)
-        pthread_cond_broadcast(&east_cond);
+    active_west--;
+    if (active_west == 0 && active_east == 0) {
+        // Канат свободен. Если есть ожидающие на другом конце - даем им приоритет
+        if (waiting_east > 0) {
+            turn = 1;
+            pthread_cond_broadcast(&east_cond);
+        } else if (waiting_west > 0) {
+            turn = 0;
+            pthread_cond_broadcast(&west_cond);
+        }
+    }
 
     pthread_mutex_unlock(&mutex);
 }
 
+
+
 void cross_east(int id)
 {
     pthread_mutex_lock(&mutex);
-    while (west_count > 0)
+    waiting_east++;
+    while (active_east > 0 || (turn == 0 && waiting_west > 0))
         pthread_cond_wait(&east_cond, &mutex);
-    east_count++;
+
+    waiting_east--;
+    active_east++;
     pthread_mutex_unlock(&mutex);
 
-    //Пересечение каньона (имитация)
     printf("East baboon %d is crossing\n", id);
     usleep(rand() % 100000);
 
     pthread_mutex_lock(&mutex);
-    east_count--;
-    if (east_count == 0)
-        pthread_cond_broadcast(&west_cond);
+    active_east--;
+    if (active_east == 0 && active_west == 0) {
+        if (waiting_west > 0) {
+            turn = 0;
+            pthread_cond_broadcast(&west_cond);
+        } else if (waiting_east > 0) {
+            turn = 1;
+            pthread_cond_broadcast(&east_cond);
+        }
+    }
 
     pthread_mutex_unlock(&mutex);
 }
