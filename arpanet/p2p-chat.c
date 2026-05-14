@@ -7,7 +7,6 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/select.h>
-#include <pthread.h>
 
 #define BUFSIZE 1024
 
