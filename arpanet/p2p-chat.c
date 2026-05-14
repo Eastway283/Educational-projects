@@ -126,7 +126,7 @@ int main(int argc, char **argv)
             int len = strlen(buff);
             if (len > 0) {
                 if (send(sock_fd, buff, len, 0) < 0) {
-                    perror("sent");
+                    perror("send");
                     break;
                 }
             }
