@@ -21,7 +21,7 @@ int main(int argc, char **argv)
         printf("%8ld bytes\n", total);
     }
     else
-        for (int i = 0; i < argc; i++) {
+        for (int i = 1; i < argc; i++) {
             total = 0;
             fsize(argv[i]);
             printf("%s  %8ld bytes\n", argv[i], total);
