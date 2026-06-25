@@ -53,7 +53,7 @@ http://<IP_компьютера>:8080
 | .css	        | text/css                 |
 | .js	          | application/javascript   |
 | .png	        | image/png                |
-| .jpg,.jpeg	  | image/jpeg               |
+| .jpg, .jpeg	  | image/jpeg               |
 | .gif	        | image/gif                |
 | .svg	        | image/svg+xml            |
 | .txt	        | text/plain               |
